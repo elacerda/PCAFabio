@@ -13,10 +13,11 @@ from matplotlib.pyplot import MaxNLocator
 debug = False
 
 
-def PCA(arr, num, reduced = False, arrMean = False, arrStd = False, sort = True):
+def PCA(arr, reduced = False, arrMean = False, arrStd = False, sort = True):
     '''
-    arr: Array must have shape (measurements, variables)
-    num: number of variables
+    ARR array must have shape (measurements, variables)
+    reduced = True:
+        each var = (var - var.mean()) / var.std()
     '''
     arr__mv = arr
     nMeasurements, nVars = arr__mv.shape    
@@ -108,7 +109,7 @@ if __name__ == '__main__':
     #EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     mat__mv = np.column_stack([O3Hb, N2Ha, HaHb, WHa, W2W3])
     nMeasurements, nVars = mat__mv.shape
-    aux = PCA(mat__mv, nVars, reduced = True)
+    aux = PCA(mat__mv, reduced = True)
     diff__mv, arrMean__m, arrStd__m, covMat__vv, eValuesS__e, eVectorsS__ve = aux
     projected_mat__me = np.dot(mat__mv, eVectorsS__ve)
     nEig = nVars
