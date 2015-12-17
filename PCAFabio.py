@@ -11,6 +11,7 @@ from matplotlib.pyplot import MaxNLocator
 
 #debug = True
 debug = False
+reduced = True
 
 
 def PCA(arr, reduced = False, arrMean = False, arrStd = False, sort = True):
@@ -22,17 +23,17 @@ def PCA(arr, reduced = False, arrMean = False, arrStd = False, sort = True):
     arr__mv = arr
     nMeasurements, nVars = arr__mv.shape    
     if not arrMean or not arrMean.any():
-        arrMean__m = arr.mean(axis = -1)
+        arrMean__v = arr.mean(axis = 0)
     else:
-        arrMean__m = arrMean
+        arrMean__v = arrMean
     if not reduced:
-        diff__mv = arr__mv - arrMean__m
+        diff__mv = arr__mv - arrMean__v
     else:
         if not arrStd or not arrStd.any():
-            arrStd__m = arr.std(axis = -1)
+            arrStd__v = arr.std(axis = 0)
         else:
-            arrStd__m = arrStd  
-        diff__mv = np.asarray([ v / arrStd__m for v in (arr__mv.T - arrMean__m) ]).T
+            arrStd__v = arrStd
+        diff__mv = np.asarray([ v / arrStd__v for v in (arr__mv - arrMean__v) ])
     covMat__vv = (diff__mv.T).dot(diff__mv) / (nVars - 1)
     eigVal__e, eigVec__ve = eigh(covMat__vv)
     eigValS__e = eigVal__e
@@ -41,7 +42,7 @@ def PCA(arr, reduced = False, arrMean = False, arrStd = False, sort = True):
         S = np.argsort(eigVal__e)[::-1]
         eigValS__e = eigVal__e[S]
         eigVecS__ve = eigVec__ve[:, S]
-    return diff__mv, arrMean__m, arrStd__m, covMat__vv, eigValS__e, eigVecS__ve
+    return diff__mv, arrMean__v, arrStd__v, covMat__vv, eigValS__e, eigVecS__ve
 
 
 if __name__ == '__main__':
@@ -84,13 +85,6 @@ if __name__ == '__main__':
     WHa = np.log10(fab_WHa[m])
     W2W3 = np.log10(fab_W3[m] / fab_W2[m])
     
-    #EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-    # rO3Hb = (O3Hb - O3Hb.mean()) / O3Hb.std()
-    # rN2Ha = (N2Ha - N2Ha.mean()) / N2Ha.std()
-    # rHaHb = (HaHb - HaHb.mean()) / HaHb.std()
-    # rWHa = (WHa - WHa.mean()) / WHa.std()
-    # rW2W3 = (W2W3 - W2W3.mean()) / W2W3.std()
-    #EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     ################ Ed
     '''
      v = variable
@@ -98,20 +92,14 @@ if __name__ == '__main__':
      e = eigenvalue index
     '''
     ################# PCA #################
-    #EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-    # mat__mv = np.column_stack([rO3Hb, rN2Ha, rHaHb, rWHa, rW2W3])
-    # nMeasurements, nVars = mat__mv.shape
-    # covMat__vv = (mat__mv.T).dot(mat__mv) / (nVars - 1)
-    # eValues__e, eVectors__ve = eigh(covMat__vv)
-    # S = np.argsort(eValues__e)[::-1]
-    # eValuesS__e = eValues__e[S]
-    # eVectorsS__ve = eVectors__ve[:, S]
-    #EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
     mat__mv = np.column_stack([O3Hb, N2Ha, HaHb, WHa, W2W3])
     nMeasurements, nVars = mat__mv.shape
-    aux = PCA(mat__mv, reduced = True)
-    diff__mv, arrMean__m, arrStd__m, covMat__vv, eValuesS__e, eVectorsS__ve = aux
-    projected_mat__me = np.dot(mat__mv, eVectorsS__ve)
+    aux = PCA(mat__mv, reduced = reduced)
+    diff__mv, arrMean__v, arrStd__v, covMat__vv, eValuesS__e, eVectorsS__ve = aux
+    if reduced:
+        projected_mat__me = diff__mv.dot(eVectorsS__ve)
+    else:
+        projected_mat__me = mat__mv.dot(eVectorsS__ve)
     nEig = nVars
     PC__em = np.empty((nEig, nMeasurements), dtype = np.float_)
     for i in xrange(nEig):
