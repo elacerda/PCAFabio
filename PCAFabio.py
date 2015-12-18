@@ -33,7 +33,7 @@ def PCA(arr, reduced = False, arrMean = False, arrStd = False, sort = True):
             arrStd__v = arr.std(axis = 0)
         else:
             arrStd__v = arrStd
-        diff__mv = np.asarray([ v / arrStd__v for v in (arr__mv - arrMean__v) ])
+        diff__mv = np.asarray([ diff / arrStd__v for diff in (arr__mv - arrMean__v) ])
     covMat__vv = (diff__mv.T).dot(diff__mv) / (nVars - 1)
     eigVal__e, eigVec__ve = eigh(covMat__vv)
     eigValS__e = eigVal__e
